@@ -2,8 +2,8 @@
 // API CONFIGURATION
 // ============================================================
 
-const TMDB_API_KEY = "f39bd92436d8ce241dd269cf24efde99";
-const WATCHMODE_API_KEY = "Phco2A1LTGe8S5zruu0lmjKMqMT5lCLhK9nH8hEc";
+const TMDB_API_KEY = "TMDB_API_KEY";
+const WATCHMODE_API_KEY = "WATCHMODE_API_KEY";
 
 const TMDB_BASE_URL =
     "https://api.themoviedb.org/3";
