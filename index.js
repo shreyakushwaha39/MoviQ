@@ -1,10 +1,3 @@
-// ============================================================
-// API CONFIGURATION
-// ============================================================
-
-const TMDB_API_KEY = "f39bd92436d8ce241dd269cf24efde99";
-const WATCHMODE_API_KEY = "Phco2A1LTGe8S5zruu0lmjKMqMT5lCLhK9nH8hEc";
-
 const TMDB_BASE_URL =
     "https://api.themoviedb.org/3";
 
@@ -93,47 +86,18 @@ function initializeSplashScreen() {
 // ============================================================
 
 async function fetchTMDB(endpoint) {
-
     try {
-
-        const separator =
-            endpoint.includes("?")
-                ? "&"
-                : "?";
-
-        const url =
-            `${TMDB_BASE_URL}${endpoint}${separator}api_key=${TMDB_API_KEY}`;
-
-        console.log("TMDB Request:", url);
-
-        const response =
-            await fetch(url);
+        const response = await fetch(
+            `/.netlify/functions/tmdb?endpoint=${encodeURIComponent(endpoint)}`
+        );
 
         if (!response.ok) {
-
-            const errorText =
-                await response.text();
-
-            console.error(
-                "TMDB Error:",
-                response.status,
-                errorText
-            );
-
-            throw new Error(
-                `TMDB request failed: ${response.status}`
-            );
+            throw new Error(`TMDB API error: ${response.status}`);
         }
 
         return await response.json();
-
     } catch (error) {
-
-        console.error(
-            "TMDB Fetch Error:",
-            error
-        );
-
+        console.error("TMDB Fetch Error:", error);
         throw error;
     }
 }
@@ -2501,123 +2465,35 @@ async function loadSimilarMovies(
 // ============================================================
 // WATCHMODE - STREAMING PLATFORMS
 // ============================================================
+async function loadWatchmodeInfo(tmdbId, mediaType) {
+    const watchProviders = document.getElementById("watch-providers");
 
-async function loadWatchmodeInfo(
-    tmdbId,
-    mediaType
-) {
-
-    const container =
-        document.getElementById(
-            "watch-providers"
-        );
-
-
-    if (!container) {
-        return;
-    }
-
-
-    container.innerHTML = `
-
-        <p class="watch-loading">
-            Checking streaming platforms...
-        </p>
-
-    `;
-
+    if (!watchProviders) return;
 
     try {
+        watchProviders.innerHTML = `
+            <div class="loading-spinner"></div>
+            <p>Loading streaming platforms...</p>
+        `;
 
-        const watchmodeId =
-            mediaType === "tv"
-                ? `tv-${tmdbId}`
-                : `movie-${tmdbId}`;
-
-
-        const url =
-            `${WATCHMODE_BASE_URL}/title/` +
-            `${watchmodeId}/sources/` +
-            `?apiKey=${encodeURIComponent(WATCHMODE_API_KEY)}` +
-            `&regions=IN`;
-
-
-        const response =
-            await fetch(url);
-
+        const response = await fetch(
+            `/.netlify/functions/watchmode?tmdbId=${encodeURIComponent(tmdbId)}&type=${encodeURIComponent(mediaType)}`
+        );
 
         if (!response.ok) {
-
-            const errorText =
-                await response.text();
-
-
-            console.error(
-                "Watchmode Error:",
-                response.status,
-                errorText
-            );
-
-
-            throw new Error(
-                `Watchmode HTTP ${response.status}`
-            );
+            throw new Error(`Watchmode API error: ${response.status}`);
         }
 
+        const data = await response.json();
 
-        const sources =
-            await response.json();
-
-
-        if (
-            !Array.isArray(sources) ||
-            sources.length === 0
-        ) {
-
-            container.innerHTML = `
-
-                <div class="no-streaming">
-
-                    <i class="fa-solid fa-tv"></i>
-
-                    <p>
-                        No streaming platforms found
-                        in India for this title.
-                    </p>
-
-                </div>
-
-            `;
-
-            return;
-        }
-
-
-        displayWatchProviders(
-            sources
-        );
-
+        displayWatchProviders(data);
     } catch (error) {
+        console.error("Watchmode Error:", error);
 
-        console.error(
-            "Watchmode Error:",
-            error
-        );
-
-
-        container.innerHTML = `
-
-            <div class="no-streaming">
-
-                <i class="fa-solid fa-circle-exclamation"></i>
-
-                <p>
-                    Streaming information is
-                    temporarily unavailable.
-                </p>
-
-            </div>
-
+        watchProviders.innerHTML = `
+            <p class="no-providers">
+                Streaming information is currently unavailable.
+            </p>
         `;
     }
 }
