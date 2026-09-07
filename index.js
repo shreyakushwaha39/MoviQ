@@ -2495,28 +2495,21 @@ async function loadWatchmodeInfo(
     mediaType
 ) {
 
-    const watchProviders =
+    const container =
         document.getElementById(
             "watch-providers"
         );
 
 
-    if (!watchProviders) {
-
-        console.log(
-            "watch-providers element not found."
-        );
-
+    if (!container) {
         return;
     }
 
 
-    watchProviders.innerHTML = `
+    container.innerHTML = `
 
-        <div class="loading-spinner"></div>
-
-        <p>
-            Loading streaming platforms...
+        <p class="watch-loading">
+            Checking streaming platforms...
         </p>
 
     `;
@@ -2524,67 +2517,73 @@ async function loadWatchmodeInfo(
 
     try {
 
-        console.log(
-            "TMDB ID:",
-            tmdbId
-        );
-
-
-        console.log(
-            "Media type:",
-            mediaType
-        );
-
-
-        /*
-         * Watchmode accepts TMDB formatted IDs:
-         *
-         * movie-123
-         * tv-123
-         */
-
-        const watchmodeTitleId =
+        const watchmodeId =
             mediaType === "tv"
                 ? `tv-${tmdbId}`
                 : `movie-${tmdbId}`;
 
 
-        console.log(
-            "Watchmode title ID:",
-            watchmodeTitleId
-        );
+        const url =
+            `${WATCHMODE_BASE_URL}/title/` +
+            `${watchmodeId}/sources/` +
+            `?apiKey=${encodeURIComponent(WATCHMODE_API_KEY)}` +
+            `&regions=IN`;
 
 
         const response =
-            await fetch(
-                `/.netlify/functions/watchmode?titleId=${encodeURIComponent(watchmodeTitleId)}`
-            );
-
-
-        const data =
-            await response.json();
-
-
-        console.log(
-            "Watchmode response:",
-            data
-        );
+            await fetch(url);
 
 
         if (!response.ok) {
 
-            throw new Error(
-                data.error ||
-                `Watchmode error ${response.status}`
+            const errorText =
+                await response.text();
+
+
+            console.error(
+                "Watchmode Error:",
+                response.status,
+                errorText
             );
 
+
+            throw new Error(
+                `Watchmode HTTP ${response.status}`
+            );
+        }
+
+
+        const sources =
+            await response.json();
+
+
+        if (
+            !Array.isArray(sources) ||
+            sources.length === 0
+        ) {
+
+            container.innerHTML = `
+
+                <div class="no-streaming">
+
+                    <i class="fa-solid fa-tv"></i>
+
+                    <p>
+                        No streaming platforms found
+                        in India for this title.
+                    </p>
+
+                </div>
+
+            `;
+
+            return;
         }
 
 
         displayWatchProviders(
-            data
+            sources
         );
-
 
     } catch (error) {
 
@@ -2594,18 +2593,21 @@ async function loadWatchmodeInfo(
         );
 
 
-        watchProviders.innerHTML = `
+        container.innerHTML = `
 
-            <p class="no-providers">
+            <div class="no-streaming">
 
-                Unable to load streaming platforms.
+                <i class="fa-solid fa-circle-exclamation"></i>
 
-            </p>
+                <p>
+                    Streaming information is
+                    temporarily unavailable.
+                </p>
+
+            </div>
 
         `;
-
     }
-
 }
 
 
@@ -2614,160 +2616,167 @@ async function loadWatchmodeInfo(
 // ============================================================
 
 function displayWatchProviders(
-    data
+    sources
 ) {
 
-    const watchProviders =
+    const container =
         document.getElementById(
             "watch-providers"
         );
 
 
-    if (!watchProviders) {
+    if (!container) {
         return;
     }
 
 
-    const sources =
-        Array.isArray(data.sources)
-            ? data.sources
-            : [];
+    container.innerHTML =
+        "";
 
 
-    console.log(
-        "Streaming sources:",
-        sources
-    );
-
-
-    if (!sources.length) {
-
-        watchProviders.innerHTML = `
-
-            <p class="no-providers">
-
-                No streaming platforms are
-                currently available in India.
-
-            </p>
-
-        `;
-
-        return;
-    }
-
-
-    // ========================================================
-    // REMOVE DUPLICATES
-    // ========================================================
-
-    const providers = {};
+    const providers = [];
 
 
     sources.forEach(
         function (source) {
 
-            if (
-                !source ||
-                !source.name
-            ) {
-                return;
-            }
+            const name =
+                source.name ||
+                "Streaming Service";
 
 
-            const key =
-                `${source.name}-${source.type}`;
+            const exists =
+                providers.some(
+                    function (provider) {
+
+                        return (
+                            provider.name ===
+                            name
+                        );
+
+                    }
+                );
 
 
-            if (!providers[key]) {
+            if (!exists) {
 
-                providers[key] =
-                    source;
+                providers.push({
 
+                    name: name,
+
+                    type:
+                        source.type ||
+                        "Streaming",
+
+                    link:
+                        source.web_url ||
+                        source.link ||
+                        null,
+
+                    logo:
+                        source.logo_100px ||
+                        source.logo ||
+                        null
+
+                });
             }
 
         }
     );
 
 
-    const providerList =
-        Object.values(
-            providers
-        );
+    if (!providers.length) {
 
-
-    if (!providerList.length) {
-
-        watchProviders.innerHTML = `
-
-            <p class="no-providers">
-
-                No streaming platforms available.
-
-            </p>
-
-        `;
+        container.innerHTML =
+            `<p>No streaming providers found.</p>`;
 
         return;
     }
 
 
-    // ========================================================
-    // DISPLAY PROVIDERS
-    // ========================================================
+    providers.forEach(
+        function (provider) {
 
-    watchProviders.innerHTML = `
-
-        <div class="provider-list">
-
-            ${providerList.map(
-                function (provider) {
-
-                    const watchUrl =
-                        provider.web_url ||
-                        provider.ios_url ||
-                        provider.android_url ||
-                        "#";
+            const card =
+                document.createElement(
+                    "div"
+                );
 
 
-                    return `
+            card.classList.add(
+                "provider"
+            );
 
-                        <a
-                            href="${escapeHTML(watchUrl)}"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            class="provider-card"
-                        >
 
-                            <div class="provider-info">
+            let logoHTML = "";
 
-                                <strong>
-                                    ${escapeHTML(
-                                        provider.name
-                                    )}
-                                </strong>
 
-                                <span>
-                                    ${escapeHTML(
-                                        getProviderType(
-                                            provider.type
-                                        )
-                                    )}
-                                </span>
+            if (provider.logo) {
 
-                            </div>
+                logoHTML = `
 
-                        </a>
+                    <img
+                        src="${provider.logo}"
+                        alt="${escapeHTML(provider.name)}"
+                        class="provider-logo"
+                        loading="lazy"
+                    >
 
-                    `;
+                `;
+            }
 
-                }
-            ).join("")}
 
-        </div>
+            let watchHTML = "";
 
-    `;
 
+            if (provider.link) {
+
+                watchHTML = `
+
+                    <a
+                        href="${provider.link}"
+                        target="_blank"
+                        rel="noopener noreferrer">
+
+                        Watch
+
+                    </a>
+
+                `;
+            }
+
+
+            card.innerHTML = `
+
+                ${logoHTML}
+
+                <div class="provider-name">
+
+                    ${escapeHTML(
+                        provider.name
+                    )}
+
+                </div>
+
+                <div class="provider-type">
+
+                    ${getProviderType(
+                        provider.type
+                    )}
+
+                </div>
+
+                ${watchHTML}
+
+            `;
+
+
+            container.appendChild(
+                card
+            );
+
+        }
+    );
 }
 
 
@@ -2775,9 +2784,7 @@ function displayWatchProviders(
 // WATCHMODE PROVIDER TYPE
 // ============================================================
 
-function getProviderType(
-    type
-) {
+function getProviderType(type) {
 
     switch (type) {
 
@@ -2786,9 +2793,6 @@ function getProviderType(
 
         case "rent":
             return "Rent";
-
-        case "buy":
-            return "Buy";
 
         case "purchase":
             return "Buy";
@@ -2801,9 +2805,7 @@ function getProviderType(
 
         default:
             return "Streaming";
-
     }
-
 }
 
 
