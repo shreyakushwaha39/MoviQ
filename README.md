@@ -8,6 +8,8 @@ The website also features a **cinematic animated MoviQ opening experience** usin
 
 ---
 
+[![Live Demo](https://img.shields.io/badge/🚀_Live_Demo-MoviQ-black?style=for-the-badge)](https://moviq-in.netlify.app/)
+
 ## ✨ Features
 
 ### 🎬 Cinematic Opening
