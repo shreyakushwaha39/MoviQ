@@ -85,6 +85,7 @@ function initializeSplashScreen() {
 // TMDB FETCH
 // ============================================================
 
+const TMDB_API_KEY = "f39bd92436d8ce241dd269cf24efde99";
 async function fetchTMDB(endpoint) {
 
     try {
