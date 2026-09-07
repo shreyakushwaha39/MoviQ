@@ -2470,29 +2470,32 @@ async function loadWatchmodeInfo(tmdbId, mediaType) {
 
     if (!watchProviders) return;
 
-    try {
-        watchProviders.innerHTML = `
-            <div class="loading-spinner"></div>
-            <p>Loading streaming platforms...</p>
-        `;
+    watchProviders.innerHTML = `
+        <div class="loading-spinner"></div>
+        <p>Loading streaming platforms...</p>
+    `;
 
+    try {
         const response = await fetch(
             `/.netlify/functions/watchmode?tmdbId=${encodeURIComponent(tmdbId)}&type=${encodeURIComponent(mediaType)}`
         );
 
-        if (!response.ok) {
-            throw new Error(`Watchmode API error: ${response.status}`);
-        }
-
         const data = await response.json();
 
+        console.log("Watchmode data:", data);
+
+        if (!response.ok) {
+            throw new Error(data.error || "Watchmode request failed");
+        }
+
         displayWatchProviders(data);
+
     } catch (error) {
         console.error("Watchmode Error:", error);
 
         watchProviders.innerHTML = `
             <p class="no-providers">
-                Streaming information is currently unavailable.
+                Streaming platforms are currently unavailable.
             </p>
         `;
     }
@@ -2503,168 +2506,62 @@ async function loadWatchmodeInfo(tmdbId, mediaType) {
 // DISPLAY STREAMING PROVIDERS
 // ============================================================
 
-function displayWatchProviders(
-    sources
-) {
+function displayWatchProviders(data) {
+    const watchProviders = document.getElementById("watch-providers");
 
-    const container =
-        document.getElementById(
-            "watch-providers"
-        );
+    if (!watchProviders) return;
 
-
-    if (!container) {
+    if (!Array.isArray(data) || data.length === 0) {
+        watchProviders.innerHTML = `
+            <p class="no-providers">
+                No streaming platforms available in India.
+            </p>
+        `;
         return;
     }
 
+    const providers = {};
 
-    container.innerHTML =
-        "";
+    data.forEach(source => {
+        if (!source.name) return;
 
-
-    const providers = [];
-
-
-    sources.forEach(
-        function (source) {
-
-            const name =
-                source.name ||
-                "Streaming Service";
-
-
-            const exists =
-                providers.some(
-                    function (provider) {
-
-                        return (
-                            provider.name ===
-                            name
-                        );
-
-                    }
-                );
-
-
-            if (!exists) {
-
-                providers.push({
-
-                    name: name,
-
-                    type:
-                        source.type ||
-                        "Streaming",
-
-                    link:
-                        source.web_url ||
-                        source.link ||
-                        null,
-
-                    logo:
-                        source.logo_100px ||
-                        source.logo ||
-                        null
-
-                });
-            }
-
+        if (!providers[source.name]) {
+            providers[source.name] = source;
         }
-    );
+    });
 
+    const providerList = Object.values(providers);
 
-    if (!providers.length) {
-
-        container.innerHTML =
-            `<p>No streaming providers found.</p>`;
-
+    if (providerList.length === 0) {
+        watchProviders.innerHTML = `
+            <p class="no-providers">
+                No streaming platforms available.
+            </p>
+        `;
         return;
     }
 
-
-    providers.forEach(
-        function (provider) {
-
-            const card =
-                document.createElement(
-                    "div"
-                );
-
-
-            card.classList.add(
-                "provider"
-            );
-
-
-            let logoHTML = "";
-
-
-            if (provider.logo) {
-
-                logoHTML = `
-
-                    <img
-                        src="${provider.logo}"
-                        alt="${escapeHTML(provider.name)}"
-                        class="provider-logo"
-                        loading="lazy"
-                    >
-
-                `;
-            }
-
-
-            let watchHTML = "";
-
-
-            if (provider.link) {
-
-                watchHTML = `
-
-                    <a
-                        href="${provider.link}"
-                        target="_blank"
-                        rel="noopener noreferrer">
-
-                        Watch
-
-                    </a>
-
-                `;
-            }
-
-
-            card.innerHTML = `
-
-                ${logoHTML}
-
-                <div class="provider-name">
-
-                    ${escapeHTML(
-                        provider.name
-                    )}
-
-                </div>
-
-                <div class="provider-type">
-
-                    ${getProviderType(
-                        provider.type
-                    )}
-
-                </div>
-
-                ${watchHTML}
-
-            `;
-
-
-            container.appendChild(
-                card
-            );
-
-        }
-    );
+    watchProviders.innerHTML = `
+        <div class="provider-list">
+            ${providerList.map(provider => `
+                <a 
+                    href="${provider.web_url || provider.ios_url || provider.android_url || "#"}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="provider-card"
+                >
+                    <div class="provider-info">
+                        <strong>${escapeHTML(provider.name)}</strong>
+                        ${
+                            provider.type
+                                ? `<span>${escapeHTML(getProviderType(provider.type))}</span>`
+                                : ""
+                        }
+                    </div>
+                </a>
+            `).join("")}
+        </div>
+    `;
 }
 
 
