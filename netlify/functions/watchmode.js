@@ -1,48 +1,23 @@
 exports.handler = async function (event) {
-
     try {
+        const titleId = event.queryStringParameters?.titleId;
 
-        const tmdbId =
-            event.queryStringParameters?.tmdbId;
-
-        const mediaType =
-            event.queryStringParameters?.type || "movie";
-
-
-        console.log("=================================");
-        console.log("WATCHMODE FUNCTION START");
-        console.log("TMDB ID:", tmdbId);
-        console.log("Media Type:", mediaType);
-        console.log("=================================");
-
-
-        if (!tmdbId) {
-
+        if (!titleId) {
             return {
                 statusCode: 400,
                 headers: {
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
-                    success: false,
-                    step: "input",
-                    error: "TMDB ID is missing"
+                    error: "titleId is missing"
                 })
             };
-
         }
 
-
-        const apiKey =
-            process.env.WATCHMODE_API_KEY;
-
+        const apiKey = process.env.WATCHMODE_API_KEY;
 
         if (!apiKey) {
-
-            console.error(
-                "WATCHMODE_API_KEY DOES NOT EXIST"
-            );
-
+            console.error("WATCHMODE_API_KEY is missing");
 
             return {
                 statusCode: 500,
@@ -50,377 +25,81 @@ exports.handler = async function (event) {
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
-                    success: false,
-                    step: "environment",
-                    error:
-                        "WATCHMODE_API_KEY is missing in Netlify"
+                    error: "WATCHMODE_API_KEY is missing in Netlify"
                 })
             };
-
         }
 
+        const url =
+            `https://api.watchmode.com/v1/title/${encodeURIComponent(titleId)}/sources/?regions=IN`;
 
-        console.log(
-            "Watchmode API key exists."
-        );
+        console.log("Calling Watchmode:");
+        console.log(url);
+        console.log("Title ID:", titleId);
 
+        const response = await fetch(url, {
+            method: "GET",
+            headers: {
+                "X-API-Key": apiKey,
+                "Accept": "application/json"
+            }
+        });
 
-        // =====================================================
-        // STEP 1 — FIND WATCHMODE TITLE
-        // =====================================================
+        const text = await response.text();
 
-        const searchUrl =
-            "https://api.watchmode.com/v1/search/" +
-            "?apiKey=" +
-            encodeURIComponent(apiKey) +
-            "&search_field=tmdb_id" +
-            "&search_value=" +
-            encodeURIComponent(tmdbId);
+        console.log("Watchmode HTTP status:", response.status);
+        console.log("Watchmode raw response:", text);
 
-
-        console.log(
-            "Watchmode search URL:",
-            searchUrl.replace(
-                apiKey,
-                "HIDDEN_API_KEY"
-            )
-        );
-
-
-        const searchResponse =
-            await fetch(searchUrl);
-
-
-        const searchText =
-            await searchResponse.text();
-
-
-        console.log(
-            "Search HTTP status:",
-            searchResponse.status
-        );
-
-
-        console.log(
-            "Search raw response:",
-            searchText
-        );
-
-
-        let searchData;
-
+        let data;
 
         try {
+            data = JSON.parse(text);
+        } catch {
+            data = {
+                raw: text
+            };
+        }
 
-            searchData =
-                JSON.parse(searchText);
-
-        } catch (error) {
-
+        if (!response.ok) {
             return {
-                statusCode: 500,
+                statusCode: response.status,
                 headers: {
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
-
-                    success: false,
-
-                    step: "search-json",
-
                     error:
-                        "Watchmode returned invalid JSON",
-
-                    status:
-                        searchResponse.status,
-
-                    raw:
-                        searchText
-
+                        data?.message ||
+                        data?.error ||
+                        "Watchmode API request failed",
+                    status: response.status,
+                    details: data
                 })
             };
-
         }
-
-
-        if (!searchResponse.ok) {
-
-            return {
-                statusCode: searchResponse.status,
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-
-                    success: false,
-
-                    step: "search",
-
-                    status:
-                        searchResponse.status,
-
-                    watchmode:
-                        searchData
-
-                })
-            };
-
-        }
-
-
-        console.log(
-            "Search data:",
-            searchData
-        );
-
-
-        // =====================================================
-        // STEP 2 — GET WATCHMODE ID
-        // =====================================================
-
-        const results =
-            searchData.title_results || [];
-
-
-        console.log(
-            "Title results:",
-            results
-        );
-
-
-        if (results.length === 0) {
-
-            return {
-                statusCode: 200,
-
-                headers: {
-                    "Content-Type":
-                        "application/json"
-                },
-
-                body: JSON.stringify({
-
-                    success: true,
-
-                    step:
-                        "title-not-found",
-
-                    tmdbId:
-                        tmdbId,
-
-                    sources: [],
-
-                    message:
-                        "Watchmode could not find this TMDB title."
-
-                })
-
-            };
-
-        }
-
-
-        const watchmodeId =
-            results[0].id;
-
-
-        console.log(
-            "Watchmode ID:",
-            watchmodeId
-        );
-
-
-        // =====================================================
-        // STEP 3 — GET STREAMING SOURCES
-        // =====================================================
-
-        const sourcesUrl =
-            "https://api.watchmode.com/v1/title/" +
-            encodeURIComponent(watchmodeId) +
-            "/sources/" +
-            "?apiKey=" +
-            encodeURIComponent(apiKey) +
-            "&regions=IN";
-
-
-        console.log(
-            "Sources URL:",
-            sourcesUrl.replace(
-                apiKey,
-                "HIDDEN_API_KEY"
-            )
-        );
-
-
-        const sourcesResponse =
-            await fetch(sourcesUrl);
-
-
-        const sourcesText =
-            await sourcesResponse.text();
-
-
-        console.log(
-            "Sources HTTP status:",
-            sourcesResponse.status
-        );
-
-
-        console.log(
-            "Sources raw response:",
-            sourcesText
-        );
-
-
-        let sourcesData;
-
-
-        try {
-
-            sourcesData =
-                JSON.parse(sourcesText);
-
-        } catch (error) {
-
-            return {
-                statusCode: 500,
-
-                headers: {
-                    "Content-Type":
-                        "application/json"
-                },
-
-                body: JSON.stringify({
-
-                    success: false,
-
-                    step:
-                        "sources-json",
-
-                    error:
-                        "Watchmode returned invalid source JSON",
-
-                    status:
-                        sourcesResponse.status,
-
-                    raw:
-                        sourcesText
-
-                })
-            };
-
-        }
-
-
-        if (!sourcesResponse.ok) {
-
-            return {
-
-                statusCode:
-                    sourcesResponse.status,
-
-                headers: {
-                    "Content-Type":
-                        "application/json"
-                },
-
-                body:
-                    JSON.stringify({
-
-                        success: false,
-
-                        step:
-                            "sources",
-
-                        status:
-                            sourcesResponse.status,
-
-                        watchmode:
-                            sourcesData
-
-                    })
-
-            };
-
-        }
-
-
-        // =====================================================
-        // SUCCESS
-        // =====================================================
-
-        console.log(
-            "FINAL SOURCES:",
-            sourcesData
-        );
-
 
         return {
-
             statusCode: 200,
-
             headers: {
-                "Content-Type":
-                    "application/json"
+                "Content-Type": "application/json"
             },
-
-            body:
-                JSON.stringify({
-
-                    success: true,
-
-                    step:
-                        "complete",
-
-                    tmdbId:
-                        tmdbId,
-
-                    mediaType:
-                        mediaType,
-
-                    watchmodeId:
-                        watchmodeId,
-
-                    sources:
-                        sourcesData
-
-                })
-
+            body: JSON.stringify({
+                sources: Array.isArray(data) ? data : [],
+                titleId: titleId
+            })
         };
-
 
     } catch (error) {
 
-        console.error(
-            "WATCHMODE FUNCTION ERROR:",
-            error
-        );
-
+        console.error("Watchmode Function Error:", error);
 
         return {
-
             statusCode: 500,
-
             headers: {
-                "Content-Type":
-                    "application/json"
+                "Content-Type": "application/json"
             },
-
-            body:
-                JSON.stringify({
-
-                    success: false,
-
-                    step:
-                        "exception",
-
-                    error:
-                        error.message
-
-                })
-
+            body: JSON.stringify({
+                error: error.message
+            })
         };
-
     }
-
 };
