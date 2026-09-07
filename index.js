@@ -2485,7 +2485,7 @@ async function loadSimilarMovies(
 
 }
 
-
+const WATCHMODE_API_KEY = "Phco2A1LTGe8S5zruu0lmjKMqMT5lCLhK9nH8hEc";
 // ============================================================
 // WATCHMODE - STREAMING PLATFORMS
 // ============================================================
