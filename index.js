@@ -1,6 +1,14 @@
-const TMDB_BASE_URL = "https://api.themoviedb.org/3";
-const TMDB_IMAGE_URL = "https://image.tmdb.org/t/p/w500";
-const TMDB_BACKDROP_URL = "https://image.tmdb.org/t/p/original";
+const TMDB_BASE_URL =
+    "https://api.themoviedb.org/3";
+
+const TMDB_IMAGE_URL =
+    "https://image.tmdb.org/t/p/w500";
+
+const TMDB_BACKDROP_URL =
+    "https://image.tmdb.org/t/p/original";
+
+const WATCHMODE_BASE_URL =
+    "https://api.watchmode.com/v1";
 
 
 // ============================================================
@@ -46,10 +54,13 @@ function initializeSplashScreen() {
         return;
     }
 
-    if (sessionStorage.getItem("moviqSplashShown")) {
+    if (
+        sessionStorage.getItem(
+            "moviqSplashShown"
+        )
+    ) {
 
         splash.style.display = "none";
-
         return;
     }
 
@@ -63,13 +74,10 @@ function initializeSplashScreen() {
         splash.classList.add("hide");
 
         setTimeout(function () {
-
             splash.style.display = "none";
-
         }, 1000);
 
     }, 4000);
-
 }
 
 
@@ -81,16 +89,33 @@ async function fetchTMDB(endpoint) {
 
     try {
 
-        const response = await fetch(
-            `/.netlify/functions/tmdb?endpoint=${encodeURIComponent(endpoint)}`
-        );
+        const separator =
+            endpoint.includes("?")
+                ? "&"
+                : "?";
+
+        const url =
+            `${TMDB_BASE_URL}${endpoint}${separator}api_key=${TMDB_API_KEY}`;
+
+        console.log("TMDB Request:", url);
+
+        const response =
+            await fetch(url);
 
         if (!response.ok) {
 
-            throw new Error(
-                `TMDB API error: ${response.status}`
+            const errorText =
+                await response.text();
+
+            console.error(
+                "TMDB Error:",
+                response.status,
+                errorText
             );
 
+            throw new Error(
+                `TMDB request failed: ${response.status}`
+            );
         }
 
         return await response.json();
@@ -103,9 +128,7 @@ async function fetchTMDB(endpoint) {
         );
 
         throw error;
-
     }
-
 }
 
 
@@ -142,7 +165,6 @@ async function initializeHomePage() {
             "trending",
             trendingContainer
         );
-
     }
 
 
@@ -152,7 +174,6 @@ async function initializeHomePage() {
             "top-rated",
             topRatedContainer
         );
-
     }
 
 
@@ -162,7 +183,6 @@ async function initializeHomePage() {
             "popular",
             popularContainer
         );
-
     }
 
 
@@ -172,14 +192,12 @@ async function initializeHomePage() {
             "upcoming",
             upcomingContainer
         );
-
     }
 
 
     initializeSectionTabs();
 
     initializeGenre();
-
 }
 
 
@@ -200,7 +218,6 @@ async function loadMovies(
 
     let endpoint = "";
 
-
     switch (type) {
 
         case "trending":
@@ -210,14 +227,12 @@ async function loadMovies(
 
             break;
 
-
         case "top-rated":
 
             endpoint =
                 "/movie/top_rated";
 
             break;
-
 
         case "popular":
 
@@ -226,7 +241,6 @@ async function loadMovies(
 
             break;
 
-
         case "upcoming":
 
             endpoint =
@@ -234,11 +248,8 @@ async function loadMovies(
 
             break;
 
-
         default:
-
             return;
-
     }
 
 
@@ -246,7 +257,6 @@ async function loadMovies(
 
         const data =
             await fetchTMDB(endpoint);
-
 
         if (
             !data ||
@@ -256,16 +266,13 @@ async function loadMovies(
             throw new Error(
                 "Invalid TMDB response"
             );
-
         }
-
 
         displayMovies(
             data.results,
             container,
             "movie"
         );
-
 
     } catch (error) {
 
@@ -274,14 +281,11 @@ async function loadMovies(
             error
         );
 
-
         showError(
             container,
             "Unable to load movies."
         );
-
     }
-
 }
 
 
@@ -302,7 +306,6 @@ async function loadSeries(
 
     let endpoint = "";
 
-
     switch (type) {
 
         case "trending":
@@ -312,14 +315,12 @@ async function loadSeries(
 
             break;
 
-
         case "top-rated":
 
             endpoint =
                 "/tv/top_rated";
 
             break;
-
 
         case "popular":
 
@@ -328,11 +329,8 @@ async function loadSeries(
 
             break;
 
-
         default:
-
             return;
-
     }
 
 
@@ -340,7 +338,6 @@ async function loadSeries(
 
         const data =
             await fetchTMDB(endpoint);
-
 
         if (
             !data ||
@@ -350,16 +347,13 @@ async function loadSeries(
             throw new Error(
                 "Invalid TMDB response"
             );
-
         }
-
 
         displayMovies(
             data.results,
             container,
             "tv"
         );
-
 
     } catch (error) {
 
@@ -368,14 +362,11 @@ async function loadSeries(
             error
         );
 
-
         showError(
             container,
             "Unable to load series."
         );
-
     }
-
 }
 
 
@@ -392,7 +383,6 @@ function displayMovies(
     if (!container) {
         return;
     }
-
 
     container.innerHTML = "";
 
@@ -416,7 +406,6 @@ function displayMovies(
 
         const card =
             document.createElement("div");
-
 
         card.classList.add(
             "movie-card"
@@ -469,7 +458,6 @@ function displayMovies(
                     <span>No Image</span>
                 </div>
             `;
-
         }
 
 
@@ -497,7 +485,6 @@ function displayMovies(
                 </div>
 
             </div>
-
         `;
 
 
@@ -507,7 +494,6 @@ function displayMovies(
 
                 window.location.href =
                     `movie-details.html?id=${item.id}&type=${mediaType}`;
-
             }
         );
 
@@ -515,7 +501,6 @@ function displayMovies(
         container.appendChild(card);
 
     });
-
 }
 
 
@@ -540,7 +525,6 @@ function initializeSectionTabs() {
                     sectionSelector
                 );
 
-
             if (!section) {
                 return;
             }
@@ -562,9 +546,7 @@ function initializeSectionTabs() {
                 !tabs.length ||
                 !container
             ) {
-
                 return;
-
             }
 
 
@@ -615,7 +597,6 @@ function initializeSectionTabs() {
                                             : "trending",
 
                                     container
-
                                 );
 
                             } else {
@@ -629,20 +610,16 @@ function initializeSectionTabs() {
                                             : "trending",
 
                                     container
-
                                 );
-
                             }
 
                         }
                     );
-
                 }
             );
 
         }
     );
-
 }
 
 
@@ -693,8 +670,9 @@ const TV_GENRES = {
 function initializeGenre() {
 
     const genreSection =
-        document.querySelector(".genre");
-
+        document.querySelector(
+            ".genre"
+        );
 
     if (!genreSection) {
         return;
@@ -729,13 +707,11 @@ function initializeGenre() {
         !genreList ||
         !container
     ) {
-
         return;
     }
 
 
-    genreList.style.display =
-        "none";
+    genreList.style.display = "none";
 
 
     let selectedGenre = null;
@@ -754,8 +730,7 @@ function initializeGenre() {
             function () {
 
                 if (
-                    genreList.style.display ===
-                    "none"
+                    genreList.style.display === "none"
                 ) {
 
                     genreList.style.display =
@@ -765,12 +740,10 @@ function initializeGenre() {
 
                     genreList.style.display =
                         "none";
-
                 }
 
             }
         );
-
     }
 
 
@@ -779,9 +752,7 @@ function initializeGenre() {
     // ========================================================
 
     const genreItems =
-        genreList.querySelectorAll(
-            "li"
-        );
+        genreList.querySelectorAll("li");
 
 
     genreItems.forEach(
@@ -853,7 +824,6 @@ function initializeGenre() {
 
                 }
             );
-
         }
     );
 
@@ -918,15 +888,12 @@ function initializeGenre() {
                             selectedType,
                             container
                         );
-
                     }
 
                 }
             );
-
         }
     );
-
 }
 
 
@@ -955,13 +922,16 @@ async function loadGenreContent(
     let mediaType;
 
 
+    // ========================================================
+    // MOVIES
+    // ========================================================
+
     if (type === "movies") {
 
         genreId =
             MOVIE_GENRES[genreName];
 
-        mediaType =
-            "movie";
+        mediaType = "movie";
 
 
         endpoint =
@@ -973,13 +943,19 @@ async function loadGenreContent(
             `&language=en-US` +
             `&page=1`;
 
-    } else {
+    }
+
+
+    // ========================================================
+    // SERIES
+    // ========================================================
+
+    else {
 
         genreId =
             TV_GENRES[genreName];
 
-        mediaType =
-            "tv";
+        mediaType = "tv";
 
 
         endpoint =
@@ -989,9 +965,12 @@ async function loadGenreContent(
             `&include_adult=false` +
             `&language=en-US` +
             `&page=1`;
-
     }
 
+
+    // ========================================================
+    // INVALID GENRE
+    // ========================================================
 
     if (!genreId) {
 
@@ -1012,18 +991,15 @@ async function loadGenreContent(
         genreName
     );
 
-
     console.log(
         "Genre ID:",
         genreId
     );
 
-
     console.log(
         "Type:",
         type
     );
-
 
     console.log(
         "Endpoint:",
@@ -1045,8 +1021,13 @@ async function loadGenreContent(
             throw new Error(
                 "Invalid genre response"
             );
-
         }
+
+
+        console.log(
+            "Genre Results:",
+            data.results
+        );
 
 
         if (
@@ -1069,7 +1050,6 @@ async function loadGenreContent(
             mediaType
         );
 
-
     } catch (error) {
 
         console.error(
@@ -1077,14 +1057,11 @@ async function loadGenreContent(
             error
         );
 
-
         showError(
             container,
             "Unable to load genre content."
         );
-
     }
-
 }
 
 
@@ -1094,8 +1071,7 @@ async function loadGenreContent(
 
 async function searchMovies(query) {
 
-    query =
-        query.trim();
+    query = query.trim();
 
 
     if (!query) {
@@ -1108,6 +1084,10 @@ async function searchMovies(query) {
         query
     );
 
+
+    // ========================================================
+    // HIDE HOME SECTIONS
+    // ========================================================
 
     const homeSections = [
         ".trending",
@@ -1131,12 +1111,15 @@ async function searchMovies(query) {
 
                 section.style.display =
                     "none";
-
             }
 
         }
     );
 
+
+    // ========================================================
+    // CREATE SEARCH SECTION
+    // ========================================================
 
     let searchSection =
         document.getElementById(
@@ -1179,7 +1162,6 @@ async function searchMovies(query) {
             </div>
 
             <div class="movie-container"></div>
-
         `;
 
 
@@ -1201,7 +1183,6 @@ async function searchMovies(query) {
             document.body.prepend(
                 searchSection
             );
-
         }
 
 
@@ -1217,9 +1198,7 @@ async function searchMovies(query) {
                 "click",
                 clearSearch
             );
-
         }
-
     }
 
 
@@ -1236,12 +1215,22 @@ async function searchMovies(query) {
     showLoading(container);
 
 
+    // ========================================================
+    // TMDB SEARCH
+    // ========================================================
+
     try {
 
         const data =
             await fetchTMDB(
                 `/search/multi?query=${encodeURIComponent(query)}&language=en-US&include_adult=false`
             );
+
+
+        console.log(
+            "Search response:",
+            data
+        );
 
 
         const results =
@@ -1255,6 +1244,12 @@ async function searchMovies(query) {
 
                 }
             );
+
+
+        console.log(
+            "Filtered search results:",
+            results
+        );
 
 
         displaySearchResults(
@@ -1275,9 +1270,7 @@ async function searchMovies(query) {
             container,
             "Unable to search."
         );
-
     }
-
 }
 
 
@@ -1308,10 +1301,7 @@ function displaySearchResults(
     }
 
 
-    items.slice(
-        0,
-        20
-    ).forEach(
+    items.slice(0, 20).forEach(
         function (item) {
 
             const card =
@@ -1357,21 +1347,24 @@ function displaySearchResults(
             if (item.poster_path) {
 
                 imageHTML = `
+
                     <img
                         src="${TMDB_IMAGE_URL}${item.poster_path}"
                         alt="${escapeHTML(title)}"
                         loading="lazy"
                     >
+
                 `;
 
             } else {
 
                 imageHTML = `
+
                     <div class="no-image">
                         <span>No Image</span>
                     </div>
-                `;
 
+                `;
             }
 
 
@@ -1418,7 +1411,6 @@ function displaySearchResults(
 
         }
     );
-
 }
 
 
@@ -1437,7 +1429,6 @@ function clearSearch() {
     if (searchSection) {
 
         searchSection.remove();
-
     }
 
 
@@ -1450,7 +1441,6 @@ function clearSearch() {
     if (input) {
 
         input.value = "";
-
     }
 
 
@@ -1473,12 +1463,10 @@ function clearSearch() {
 
                 section.style.display =
                     "";
-
             }
 
         }
     );
-
 }
 
 
@@ -1513,6 +1501,10 @@ function initializeSearch() {
     }
 
 
+    // ========================================================
+    // SEARCH BUTTON
+    // ========================================================
+
     searchButton.addEventListener(
         "click",
         function () {
@@ -1526,13 +1518,15 @@ function initializeSearch() {
             }
 
 
-            searchMovies(
-                query
-            );
+            searchMovies(query);
 
         }
     );
 
+
+    // ========================================================
+    // ENTER KEY
+    // ========================================================
 
     searchInput.addEventListener(
         "keydown",
@@ -1554,15 +1548,11 @@ function initializeSearch() {
                 }
 
 
-                searchMovies(
-                    query
-                );
-
+                searchMovies(query);
             }
 
         }
     );
-
 }
 
 
@@ -1608,16 +1598,18 @@ function initializeVoiceSearch() {
         window.webkitSpeechRecognition;
 
 
+    // ========================================================
+    // BROWSER SUPPORT
+    // ========================================================
+
     if (!SpeechRecognition) {
 
         console.log(
             "Speech Recognition is not supported by this browser."
         );
 
-
         voiceButton.style.display =
             "none";
-
 
         return;
     }
@@ -1639,6 +1631,10 @@ function initializeVoiceSearch() {
         false;
 
 
+    // ========================================================
+    // START LISTENING
+    // ========================================================
+
     voiceButton.addEventListener(
         "click",
         function () {
@@ -1652,7 +1648,6 @@ function initializeVoiceSearch() {
 
                     voiceIcon.className =
                         "fa-solid fa-microphone-lines";
-
                 }
 
 
@@ -1660,18 +1655,20 @@ function initializeVoiceSearch() {
                     "Listening..."
                 );
 
-
             } catch (error) {
 
                 console.log(
                     "Voice recognition is already running."
                 );
-
             }
 
         }
     );
 
+
+    // ========================================================
+    // VOICE RESULT
+    // ========================================================
 
     recognition.onresult =
         function (event) {
@@ -1697,11 +1694,14 @@ function initializeVoiceSearch() {
                 searchMovies(
                     transcript
                 );
-
             }
 
         };
 
+
+    // ========================================================
+    // VOICE END
+    // ========================================================
 
     recognition.onend =
         function () {
@@ -1710,11 +1710,19 @@ function initializeVoiceSearch() {
 
                 voiceIcon.className =
                     "fa-solid fa-microphone";
-
             }
+
+
+            console.log(
+                "Voice recognition ended."
+            );
 
         };
 
+
+    // ========================================================
+    // VOICE ERROR
+    // ========================================================
 
     recognition.onerror =
         function (event) {
@@ -1729,11 +1737,9 @@ function initializeVoiceSearch() {
 
                 voiceIcon.className =
                     "fa-solid fa-microphone";
-
             }
 
         };
-
 }
 
 
@@ -1802,7 +1808,6 @@ async function initializeDetailsPage() {
         movieId,
         mediaType
     );
-
 }
 
 
@@ -1823,10 +1828,14 @@ async function loadMovieDetails(
                 : `/movie/${movieId}`;
 
 
+        console.log(
+            "Loading details:",
+            endpoint
+        );
+
+
         const data =
-            await fetchTMDB(
-                endpoint
-            );
+            await fetchTMDB(endpoint);
 
 
         console.log(
@@ -1835,7 +1844,9 @@ async function loadMovieDetails(
         );
 
 
+        // ====================================================
         // POSTER
+        // ====================================================
 
         const poster =
             document.getElementById(
@@ -1850,7 +1861,6 @@ async function loadMovieDetails(
                 poster.src =
                     `${TMDB_IMAGE_URL}${data.poster_path}`;
 
-
                 poster.style.display =
                     "block";
 
@@ -1858,13 +1868,13 @@ async function loadMovieDetails(
 
                 poster.style.display =
                     "none";
-
             }
-
         }
 
 
+        // ====================================================
         // TITLE
+        // ====================================================
 
         const titleElement =
             document.getElementById(
@@ -1878,11 +1888,12 @@ async function loadMovieDetails(
                 data.title ||
                 data.name ||
                 "Unknown Title";
-
         }
 
 
+        // ====================================================
         // BACKDROP
+        // ====================================================
 
         const backdrop =
             document.getElementById(
@@ -1897,7 +1908,6 @@ async function loadMovieDetails(
                 backdrop.src =
                     `${TMDB_BACKDROP_URL}${data.backdrop_path}`;
 
-
                 backdrop.style.display =
                     "block";
 
@@ -1905,13 +1915,13 @@ async function loadMovieDetails(
 
                 backdrop.style.display =
                     "none";
-
             }
-
         }
 
 
+        // ====================================================
         // RATING
+        // ====================================================
 
         const ratingElement =
             document.getElementById(
@@ -1930,11 +1940,12 @@ async function loadMovieDetails(
                         ).toFixed(1)
                         : "N/A"
                 }`;
-
         }
 
 
+        // ====================================================
         // RELEASE DATE
+        // ====================================================
 
         const releaseElement =
             document.getElementById(
@@ -1952,11 +1963,12 @@ async function loadMovieDetails(
 
             releaseElement.innerHTML =
                 `<i class="fa-regular fa-calendar"></i> ${date}`;
-
         }
 
 
+        // ====================================================
         // RUNTIME
+        // ====================================================
 
         const runtimeElement =
             document.getElementById(
@@ -1978,7 +1990,6 @@ async function loadMovieDetails(
 
                 runtime =
                     data.episode_run_time[0];
-
             }
 
 
@@ -1989,11 +2000,12 @@ async function loadMovieDetails(
                         ? runtime + " min"
                         : "N/A"
                 }`;
-
         }
 
 
+        // ====================================================
         // LANGUAGE
+        // ====================================================
 
         const languageElement =
             document.getElementById(
@@ -2010,11 +2022,12 @@ async function loadMovieDetails(
                         ? data.original_language.toUpperCase()
                         : "N/A"
                 }`;
-
         }
 
 
+        // ====================================================
         // GENRES
+        // ====================================================
 
         const genresElement =
             document.getElementById(
@@ -2052,13 +2065,13 @@ async function loadMovieDetails(
 
                     }
                 );
-
             }
-
         }
 
 
+        // ====================================================
         // OVERVIEW
+        // ====================================================
 
         const overviewElement =
             document.getElementById(
@@ -2071,17 +2084,17 @@ async function loadMovieDetails(
             overviewElement.textContent =
                 data.overview ||
                 "No overview available.";
-
         }
 
 
+        // ====================================================
         // TRAILER
+        // ====================================================
 
         loadTrailer(
             movieId,
             mediaType
         );
-
 
     } catch (error) {
 
@@ -2094,9 +2107,7 @@ async function loadMovieDetails(
         showDetailsError(
             "Unable to load movie details."
         );
-
     }
-
 }
 
 
@@ -2128,10 +2139,14 @@ async function loadTrailer(
                 : `/movie/${movieId}/videos`;
 
 
+        console.log(
+            "Loading trailer:",
+            endpoint
+        );
+
+
         const data =
-            await fetchTMDB(
-                endpoint
-            );
+            await fetchTMDB(endpoint);
 
 
         const videos =
@@ -2165,7 +2180,6 @@ async function loadTrailer(
 
                     }
                 );
-
         }
 
 
@@ -2183,7 +2197,6 @@ async function loadTrailer(
 
                     }
                 );
-
         }
 
 
@@ -2200,7 +2213,6 @@ async function loadTrailer(
 
                     }
                 );
-
         }
 
 
@@ -2217,9 +2229,12 @@ async function loadTrailer(
 
                     }
                 );
-
         }
 
+
+        // ====================================================
+        // LOAD YOUTUBE TRAILER
+        // ====================================================
 
         if (
             selectedVideo &&
@@ -2239,7 +2254,6 @@ async function loadTrailer(
                 selectedVideo.name
             );
 
-
         } else {
 
             iframe.removeAttribute(
@@ -2250,8 +2264,11 @@ async function loadTrailer(
             iframe.style.display =
                 "none";
 
-        }
 
+            console.log(
+                "No YouTube trailer found."
+            );
+        }
 
     } catch (error) {
 
@@ -2268,9 +2285,7 @@ async function loadTrailer(
 
         iframe.style.display =
             "none";
-
     }
-
 }
 
 
@@ -2295,7 +2310,7 @@ async function loadCast(
 
 
     container.innerHTML =
-        "<p>Loading cast...</p>";
+        `<p>Loading cast...</p>`;
 
 
     try {
@@ -2307,9 +2322,7 @@ async function loadCast(
 
 
         const data =
-            await fetchTMDB(
-                endpoint
-            );
+            await fetchTMDB(endpoint);
 
 
         const cast =
@@ -2323,16 +2336,13 @@ async function loadCast(
         if (!cast.length) {
 
             container.innerHTML =
-                "<p>Cast information not available.</p>";
+                `<p>Cast information not available.</p>`;
 
             return;
         }
 
 
-        cast.slice(
-            0,
-            10
-        ).forEach(
+        cast.slice(0, 10).forEach(
             function (person) {
 
                 const card =
@@ -2352,21 +2362,24 @@ async function loadCast(
                 if (person.profile_path) {
 
                     imageHTML = `
+
                         <img
                             src="${TMDB_IMAGE_URL}${person.profile_path}"
                             alt="${escapeHTML(person.name)}"
                             loading="lazy"
                         >
+
                     `;
 
                 } else {
 
                     imageHTML = `
+
                         <div class="no-image">
                             <span>No Image</span>
                         </div>
-                    `;
 
+                    `;
                 }
 
 
@@ -2395,7 +2408,6 @@ async function loadCast(
             }
         );
 
-
     } catch (error) {
 
         console.error(
@@ -2405,10 +2417,8 @@ async function loadCast(
 
 
         container.innerHTML =
-            "<p>Unable to load cast.</p>";
-
+            `<p>Unable to load cast.</p>`;
     }
-
 }
 
 
@@ -2433,7 +2443,7 @@ async function loadSimilarMovies(
 
 
     container.innerHTML =
-        "<p>Loading similar titles...</p>";
+        `<p>Loading similar titles...</p>`;
 
 
     try {
@@ -2445,9 +2455,7 @@ async function loadSimilarMovies(
 
 
         const data =
-            await fetchTMDB(
-                endpoint
-            );
+            await fetchTMDB(endpoint);
 
 
         const results =
@@ -2457,7 +2465,7 @@ async function loadSimilarMovies(
         if (!results.length) {
 
             container.innerHTML =
-                "<p>No similar titles found.</p>";
+                `<p>No similar titles found.</p>`;
 
             return;
         }
@@ -2469,7 +2477,6 @@ async function loadSimilarMovies(
             mediaType
         );
 
-
     } catch (error) {
 
         console.error(
@@ -2479,10 +2486,8 @@ async function loadSimilarMovies(
 
 
         container.innerHTML =
-            "<p>Unable to load similar titles.</p>";
-
+            `<p>Unable to load similar titles.</p>`;
     }
-
 }
 
 const WATCHMODE_API_KEY = "Phco2A1LTGe8S5zruu0lmjKMqMT5lCLhK9nH8hEc";
@@ -2834,7 +2839,6 @@ function initializeBackButton() {
 
         }
     );
-
 }
 
 
@@ -2858,7 +2862,6 @@ function showLoading(
         </p>
 
     `;
-
 }
 
 
@@ -2879,7 +2882,6 @@ function showError(
         </p>
 
     `;
-
 }
 
 
@@ -2897,7 +2899,6 @@ function showDetailsError(
 
         title.textContent =
             message;
-
     }
 
 
@@ -2910,10 +2911,8 @@ function showDetailsError(
     if (overview) {
 
         overview.textContent =
-            "Please check your TMDB API configuration and movie URL.";
-
+            "Please check your TMDB API key and the movie URL.";
     }
-
 }
 
 
@@ -2944,7 +2943,6 @@ function showGenreUnavailable(
         </p>
 
     `;
-
 }
 
 
@@ -2952,9 +2950,7 @@ function showGenreUnavailable(
 // HTML ESCAPE
 // ============================================================
 
-function escapeHTML(
-    value
-) {
+function escapeHTML(value) {
 
     if (
         value === null ||
@@ -2962,7 +2958,6 @@ function escapeHTML(
     ) {
 
         return "";
-
     }
 
 
@@ -2992,5 +2987,4 @@ function escapeHTML(
             /'/g,
             "&#039;"
         );
-
 }
