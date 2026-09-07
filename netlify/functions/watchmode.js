@@ -5,6 +5,16 @@ exports.handler = async function (event) {
         const tmdbId =
             event.queryStringParameters?.tmdbId;
 
+        const mediaType =
+            event.queryStringParameters?.type || "movie";
+
+
+        console.log("=================================");
+        console.log("WATCHMODE FUNCTION START");
+        console.log("TMDB ID:", tmdbId);
+        console.log("Media Type:", mediaType);
+        console.log("=================================");
+
 
         if (!tmdbId) {
 
@@ -14,7 +24,9 @@ exports.handler = async function (event) {
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
-                    error: "TMDB ID is required"
+                    success: false,
+                    step: "input",
+                    error: "TMDB ID is missing"
                 })
             };
 
@@ -27,42 +39,108 @@ exports.handler = async function (event) {
 
         if (!apiKey) {
 
+            console.error(
+                "WATCHMODE_API_KEY DOES NOT EXIST"
+            );
+
+
             return {
                 statusCode: 500,
                 headers: {
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
-                    error: "WATCHMODE_API_KEY is missing"
+                    success: false,
+                    step: "environment",
+                    error:
+                        "WATCHMODE_API_KEY is missing in Netlify"
                 })
             };
 
         }
 
 
-        // ====================================================
-        // FIND WATCHMODE TITLE USING TMDB ID
-        // ====================================================
+        console.log(
+            "Watchmode API key exists."
+        );
+
+
+        // =====================================================
+        // STEP 1 — FIND WATCHMODE TITLE
+        // =====================================================
 
         const searchUrl =
-            `https://api.watchmode.com/v1/search/` +
-            `?apiKey=${encodeURIComponent(apiKey)}` +
-            `&search_field=tmdb_id` +
-            `&search_value=${encodeURIComponent(tmdbId)}`;
+            "https://api.watchmode.com/v1/search/" +
+            "?apiKey=" +
+            encodeURIComponent(apiKey) +
+            "&search_field=tmdb_id" +
+            "&search_value=" +
+            encodeURIComponent(tmdbId);
+
+
+        console.log(
+            "Watchmode search URL:",
+            searchUrl.replace(
+                apiKey,
+                "HIDDEN_API_KEY"
+            )
+        );
 
 
         const searchResponse =
             await fetch(searchUrl);
 
 
-        const searchData =
-            await searchResponse.json();
+        const searchText =
+            await searchResponse.text();
 
 
         console.log(
-            "Watchmode search response:",
-            searchData
+            "Search HTTP status:",
+            searchResponse.status
         );
+
+
+        console.log(
+            "Search raw response:",
+            searchText
+        );
+
+
+        let searchData;
+
+
+        try {
+
+            searchData =
+                JSON.parse(searchText);
+
+        } catch (error) {
+
+            return {
+                statusCode: 500,
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+
+                    success: false,
+
+                    step: "search-json",
+
+                    error:
+                        "Watchmode returned invalid JSON",
+
+                    status:
+                        searchResponse.status,
+
+                    raw:
+                        searchText
+
+                })
+            };
+
+        }
 
 
         if (!searchResponse.ok) {
@@ -72,36 +150,75 @@ exports.handler = async function (event) {
                 headers: {
                     "Content-Type": "application/json"
                 },
-                body: JSON.stringify(searchData)
-            };
-
-        }
-
-
-        const results =
-            searchData.title_results || [];
-
-
-        if (results.length === 0) {
-
-            return {
-                statusCode: 200,
-                headers: {
-                    "Content-Type": "application/json"
-                },
                 body: JSON.stringify({
-                    sources: [],
-                    message:
-                        "Title not found in Watchmode"
+
+                    success: false,
+
+                    step: "search",
+
+                    status:
+                        searchResponse.status,
+
+                    watchmode:
+                        searchData
+
                 })
             };
 
         }
 
 
-        // ====================================================
-        // WATCHMODE TITLE ID
-        // ====================================================
+        console.log(
+            "Search data:",
+            searchData
+        );
+
+
+        // =====================================================
+        // STEP 2 — GET WATCHMODE ID
+        // =====================================================
+
+        const results =
+            searchData.title_results || [];
+
+
+        console.log(
+            "Title results:",
+            results
+        );
+
+
+        if (results.length === 0) {
+
+            return {
+                statusCode: 200,
+
+                headers: {
+                    "Content-Type":
+                        "application/json"
+                },
+
+                body: JSON.stringify({
+
+                    success: true,
+
+                    step:
+                        "title-not-found",
+
+                    tmdbId:
+                        tmdbId,
+
+                    sources: [],
+
+                    message:
+                        "Watchmode could not find this TMDB title."
+
+                })
+
+            };
+
+        }
+
 
         const watchmodeId =
             results[0].id;
@@ -113,63 +230,161 @@ exports.handler = async function (event) {
         );
 
 
-        // ====================================================
-        // GET STREAMING SOURCES
-        // ====================================================
+        // =====================================================
+        // STEP 3 — GET STREAMING SOURCES
+        // =====================================================
 
         const sourcesUrl =
-            `https://api.watchmode.com/v1/title/${watchmodeId}/sources/` +
-            `?apiKey=${encodeURIComponent(apiKey)}` +
-            `&regions=IN`;
+            "https://api.watchmode.com/v1/title/" +
+            encodeURIComponent(watchmodeId) +
+            "/sources/" +
+            "?apiKey=" +
+            encodeURIComponent(apiKey) +
+            "&regions=IN";
+
+
+        console.log(
+            "Sources URL:",
+            sourcesUrl.replace(
+                apiKey,
+                "HIDDEN_API_KEY"
+            )
+        );
 
 
         const sourcesResponse =
             await fetch(sourcesUrl);
 
 
-        const sourcesData =
-            await sourcesResponse.json();
+        const sourcesText =
+            await sourcesResponse.text();
 
 
         console.log(
-            "Watchmode sources:",
-            sourcesData
+            "Sources HTTP status:",
+            sourcesResponse.status
         );
 
 
-        if (!sourcesResponse.ok) {
+        console.log(
+            "Sources raw response:",
+            sourcesText
+        );
+
+
+        let sourcesData;
+
+
+        try {
+
+            sourcesData =
+                JSON.parse(sourcesText);
+
+        } catch (error) {
 
             return {
-                statusCode: sourcesResponse.status,
+                statusCode: 500,
+
                 headers: {
-                    "Content-Type": "application/json"
+                    "Content-Type":
+                        "application/json"
                 },
-                body: JSON.stringify(sourcesData)
+
+                body: JSON.stringify({
+
+                    success: false,
+
+                    step:
+                        "sources-json",
+
+                    error:
+                        "Watchmode returned invalid source JSON",
+
+                    status:
+                        sourcesResponse.status,
+
+                    raw:
+                        sourcesText
+
+                })
             };
 
         }
 
 
-        // ====================================================
-        // SEND DATA TO FRONTEND
-        // ====================================================
+        if (!sourcesResponse.ok) {
+
+            return {
+
+                statusCode:
+                    sourcesResponse.status,
+
+                headers: {
+                    "Content-Type":
+                        "application/json"
+                },
+
+                body:
+                    JSON.stringify({
+
+                        success: false,
+
+                        step:
+                            "sources",
+
+                        status:
+                            sourcesResponse.status,
+
+                        watchmode:
+                            sourcesData
+
+                    })
+
+            };
+
+        }
+
+
+        // =====================================================
+        // SUCCESS
+        // =====================================================
+
+        console.log(
+            "FINAL SOURCES:",
+            sourcesData
+        );
+
 
         return {
 
             statusCode: 200,
 
             headers: {
-                "Content-Type": "application/json"
+                "Content-Type":
+                    "application/json"
             },
 
-            body: JSON.stringify({
+            body:
+                JSON.stringify({
 
-                sources: sourcesData,
+                    success: true,
 
-                watchmodeId:
-                    watchmodeId
+                    step:
+                        "complete",
 
-            })
+                    tmdbId:
+                        tmdbId,
+
+                    mediaType:
+                        mediaType,
+
+                    watchmodeId:
+                        watchmodeId,
+
+                    sources:
+                        sourcesData
+
+                })
 
         };
 
@@ -177,7 +392,7 @@ exports.handler = async function (event) {
     } catch (error) {
 
         console.error(
-            "Watchmode Function Error:",
+            "WATCHMODE FUNCTION ERROR:",
             error
         );
 
@@ -187,15 +402,22 @@ exports.handler = async function (event) {
             statusCode: 500,
 
             headers: {
-                "Content-Type": "application/json"
+                "Content-Type":
+                    "application/json"
             },
 
-            body: JSON.stringify({
+            body:
+                JSON.stringify({
 
-                error:
-                    error.message
+                    success: false,
 
-            })
+                    step:
+                        "exception",
+
+                    error:
+                        error.message
+
+                })
 
         };
 
