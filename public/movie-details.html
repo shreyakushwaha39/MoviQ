@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0">
+    <title>Movie Details | MoviQ</title>
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet"
+        href="style.css">
+</head>
+
+<body>
+    <!------------------------ Navigation ------------------------>
+    <header>
+        <nav>
+            <div class="logo">
+                <img
+                    src="images/moviQlogo.png"
+                    alt="MoviQ logo">
+            </div>
+            <div class="search-bar">
+                <input
+                    type="text"
+                    id="search-input"
+                    placeholder="Search movies, series.....">
+                <button
+                    id="search-btn"
+                    type="button">
+                    <i
+                        class="fa-solid fa-search"
+                        id="search-icon">
+                    </i>
+                </button>
+                <button
+                    id="voice-btn"
+                    type="button">
+                    <i
+                        class="fa-solid fa-microphone"
+                        id="voice-icon">
+                    </i>
+                </button>
+            </div>
+            <button
+                id="back-btn"
+                type="button"
+                aria-label="Go Back">
+                <i
+                    class="fa-solid fa-arrow-left"
+                    id="back-icon">
+                </i>
+            </button>
+        </nav>
+    </header>
+
+    <main>
+        <!------------------------ Movie Hero ------------------------>
+        <section class="movie-hero">
+            <img
+                id="movie-backdrop"
+                class="movie-backdrop"
+                alt="Movie Backdrop">
+            <div class="backdrop-overlay"></div>
+            <div class="hero-content">
+                <div class="poster-container">
+                    <img
+                        id="movie-poster"
+                        class="movie-poster"
+                        alt="Movie Poster"
+                    >
+                </div>
+                <div class="trailer-container">
+                    <iframe
+                        id="movie-trailer"
+                        title="Movie Trailer"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        allowfullscreen>
+                    </iframe>
+                </div>
+            </div>
+        </section>
+
+        <!------------------------ Movie Information ------------------------>
+        <section class="movie-info">
+            <h1 id="movie-title"></h1>
+            <div class="movie-meta">
+                <span id="movie-rating">
+                    <i class="fa-solid fa-star"></i>
+                </span>
+                <span id="movie-release-date">
+                    <i class="fa-regular fa-calendar"></i>
+                </span>
+                <span id="movie-runtime">
+                    <i class="fa-regular fa-clock"></i>
+                </span>
+                <span id="movie-language">
+                    <i class="fa-solid fa-language"></i>
+                </span>
+            </div>
+
+            <!------------------------ Genres ------------------------>
+            <div
+                id="movie-genres"
+                class="movie-genres">
+                <!-- Genre badges will be added by JavaScript -->
+            </div>
+
+            <!------------------------ Overview ------------------------>
+            <div class="movie-overview">
+                <h2>
+                    Overview
+                </h2>
+                <p id="movie-overview-text"></p>
+            </div>
+
+            <!------------------------ Cast Section ------------------------>
+            <section class="cast-section">
+                <h2>
+                    Top Cast
+                </h2>
+                <div
+                    class="cast-container"
+                    id="cast-container">
+                    <!-- Cast cards will be added by JavaScript -->
+                </div>
+            </section>
+        </section>
+
+        <!---------------------- Where to Watch ---------------------->
+        <section class="watch-section">
+            <h2>
+                Where to Watch
+            </h2>
+            <p class="watch-subtitle">
+                Find where you can legally watch this movie.
+            </p>
+            <div
+                class="watch-providers"
+                id="watch-providers">
+                <!-- Watchmode streaming providers will be added here -->
+            </div>
+        </section>
+
+        <!------------------------ Similar Movies ------------------------>
+        <section class="similar-section">
+            <h2>
+                Similar Movies
+            </h2>
+            <div
+                class="movie-container"
+                id="similar-container">
+                <!-- TMDB similar movies will be added by JavaScript -->
+            </div>
+        </section>
+    </main>
+
+    <!------------------------ Footer ------------------------>
+    <footer>
+        <div class="copyright-bar">
+            <p>
+                © 2026 MoviQ. Developed by Shreya Kushwaha
+            </p>
+        </div>
+        <div class="social-icons">
+            <p>
+                Connect with us:
+            </p>
+            <a
+                href="https://github.com/shreyakushwaha39"
+                target="_blank"
+                aria-label="GitHub">
+                <i class="fa-brands fa-github"></i>
+            </a>
+            <a
+                href="https://www.instagram.com/shreya1._.0kushwaha/"
+                target="_blank"
+                aria-label="Instagram">
+                <i class="fa-brands fa-instagram"></i>
+            </a>
+            <a
+                href="https://www.linkedin.com/in/shreya-kushwaha-b370b2238/"
+                target="_blank"
+                aria-label="LinkedIn">
+                <i class="fa-brands fa-linkedin-in"></i>
+            </a>
+        </div>
+    </footer>
+
+    <!------------------------ JavaScript ------------------------>
+    <script src="index.js"></script>
+
+</body>
+</html>

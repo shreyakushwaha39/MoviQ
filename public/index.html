@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MoviQ</title>
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <!-------------------- Splash Screen Logo -------------------->
+    <div id="splash-screen">
+        <div class="logo-container">
+            <div class="q-logo">
+                <img src="images/Qlogo.png" alt="MoviQ Logo">
+            </div>
+            <div class="full-logo">
+                <img src="images/moviQlogo.png" alt="MoviQ Logo">
+            </div>
+            <p class="tagline">
+                Discover • Stream • Enjoy
+            </p>
+        </div>
+    </div>
+
+    <!------------------------ Navigation ------------------------>
+    <header>
+        <nav>
+            <div class="logo">
+                <img src="images/moviQlogo.png" alt="MoviQ logo">
+            </div>
+            <div class="search-bar">
+                <input
+                    type="text"
+                    id="search-input"
+                    placeholder="Search movies, series....."
+                >
+                <button id="search-btn" type="button">
+                    <i class="fa-solid fa-search" id="search-icon"></i>
+                </button>
+                <button id="voice-btn" type="button">
+                    <i class="fa-solid fa-microphone" id="voice-icon"></i>
+                </button>
+            </div>
+        </nav>
+    </header>
+
+    <!---------------------- Trending Section ---------------------->
+    <section class="trending">
+        <div class="section-header">
+            <h2>Trending</h2>
+            <div class="tabs">
+                <span
+                    class="tab active"
+                    data-tab="movies">
+                    Movies
+                </span>
+                <span
+                    class="tab"
+                    data-tab="tv">
+                    Series
+                </span>
+            </div>
+        </div>
+        <div class="movie-container">
+            <!-- Movie cards will be added by JavaScript -->
+        </div>
+    </section>
+
+    <!---------------------- Top Rated Section ---------------------->
+    <section class="top-rated">
+        <div class="section-header">
+            <h2>Top Rated</h2>
+            <div class="tabs">
+                <span
+                    class="tab active"
+                    data-tab="movies">
+                    Movies
+                </span>
+                <span
+                    class="tab"
+                    data-tab="tv">
+                    Series
+                </span>
+            </div>
+        </div>
+        <div class="movie-container">
+            <!-- Movie cards will be added by JavaScript -->
+        </div>
+    </section>
+
+    <!---------------------- Popular Section ---------------------->
+       <section class="popular">
+        <div class="section-header">
+            <h2>Popular</h2>
+            <div class="tabs">
+                <span
+                    class="tab active"
+                    data-tab="movies">
+                    Movies
+                </span>
+                <span
+                    class="tab"
+                    data-tab="tv">
+                    Series
+                </span>
+            </div>
+        </div>
+        <div class="movie-container">
+            <!-- Movie cards will be added by JavaScript -->
+        </div>
+    </section>
+
+
+
+    <!---------------------- Genre Section ---------------------->
+    <section class="genre">
+        <h2 id="genre-header">
+            <span>
+                Browse By Genre
+            </span>
+            <i class="fa-solid fa-chevron-down"></i>
+        </h2>
+        <ul class="genre-list">
+            <li data-genre="28">
+                Action
+            </li>
+
+            <li data-genre="12">
+                Adventure
+            </li>
+
+            <li data-genre="35">
+                Comedy
+            </li>
+
+            <li data-genre="18">
+                Drama
+            </li>
+
+            <li data-genre="27">
+                Horror
+            </li>
+
+            <li data-genre="10749">
+                Romance
+            </li>
+
+            <li data-genre="878">
+                Sci-Fi
+            </li>
+
+            <li data-genre="14">
+                Fantasy
+            </li>
+
+            <li data-genre="16">
+                Animation
+            </li>
+
+            <li data-genre="53">
+                Thriller
+            </li>
+
+            <li data-genre="80">
+                Crime
+            </li>
+
+            <li data-genre="9648">
+                Mystery
+            </li>
+        </ul>
+        <div class="tabs">
+            <span
+                class="tab active"
+                data-tab="movies">
+                Movies
+            </span>
+            <span
+                class="tab"
+                data-tab="tv">
+                Series
+            </span>
+        </div>
+        <div class="movie-container">
+            <!-- Genre movie/series cards will be added by JavaScript -->
+        </div>
+    </section>
+
+    <!----------------------- Footer Section ----------------------->
+    <footer>
+        <div class="copyright-bar">
+            <p>
+                © 2026 MoviQ. Developed by Shreya Kushwaha
+            </p>
+        </div>
+        <div class="social-icons">
+            <p>
+                Connect with us:
+            </p>
+            <a
+                href="https://github.com/shreyakushwaha39"
+                target="_blank"
+                aria-label="GitHub">
+                <i class="fa-brands fa-github"></i>
+            </a>
+            <a
+                href="https://www.instagram.com/shreya1._.0kushwaha/"
+                target="_blank"
+                aria-label="Instagram">
+                <i class="fa-brands fa-instagram"></i>
+            </a>
+            <a
+                href="https://www.linkedin.com/in/shreya-kushwaha-b370b2238/"
+                target="_blank"
+                aria-label="LinkedIn">
+                <i class="fa-brands fa-linkedin-in"></i>
+            </a>
+        </div>
+    </footer>
+
+    <script src="index.js"></script>
+</body>
+</html>
