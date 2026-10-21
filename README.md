@@ -76,9 +76,9 @@ MoviQ/
 ```
    TMDB_API_KEY=your-tmdb-key
    WATCHMODE_API_KEY=your-watchmode-key
-   PORT=3000
+   PORT=3001
 ```
-4. Start the server and open http://localhost:3000
+4. Start the server and open http://localhost:3001
 ```bash
    node server.js
 ```
